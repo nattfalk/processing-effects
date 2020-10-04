@@ -1,3 +1,9 @@
+//
+// Test with noise-based flowfields
+// Based on the article:
+// https://codepen.io/DonKarlssonSan/post/particles-in-simplex-noise-flow-field
+//
+
 final int WIDTH = 640;
 final int HEIGHT = 512;
 
@@ -55,7 +61,6 @@ void draw() {
 
   float flowZ = frameCount * 0.006; // For moving flowfield
   //float flowZ = 0; // For static flowfield
-  
 
   // Create flowfield
   flowfield = new PVector[cols * rows];
