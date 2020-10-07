@@ -15,7 +15,7 @@ final int max_particles = 100;
 class Particle {
   PVector pos;
   PVector acc = new PVector(0, 0);
-  PVector vel = new PVector((float)(Math.random()*2-1), (float)(Math.random()*2-1));
+  PVector vel = new PVector((float)(Math.random()*4-2), (float)(Math.random()*4-2));
 
   Particle(float x, float y) {
     this.pos = new PVector(x, y);
@@ -23,13 +23,18 @@ class Particle {
 
   void update(PVector acc) {
     this.acc.add(acc);
-    this.vel.add(this.acc);
-    this.vel.limit(1.5);
-    this.pos.add(this.vel);
+    //this.vel.add(this.acc);
+    //this.vel.limit(1.5);
+    //this.pos.add(this.vel);
+    
+    this.acc.x *= abs(this.vel.x);
+    this.acc.y *= abs(this.vel.y);
+    this.pos.add(this.acc);
 
     if (this.pos.x < 0 || this.pos.x >= WIDTH || this.pos.y < 0 || this.pos.y >= HEIGHT) {
-      this.pos.x = (float)(Math.random() * 300 - 150) + WIDTH / 2;
-      this.pos.y = (float)(Math.random() * 300 - 150) + HEIGHT / 2;
+      /*this.pos.x = (float)(Math.random() * 300 - 150) + WIDTH / 2;
+      this.pos.y = (float)(Math.random() * 300 - 150) + HEIGHT / 2;*/
+      return;
     }
 
     this.acc.mult(0);
@@ -39,6 +44,24 @@ class Particle {
 int cols, rows;
 PVector[] flowfield;
 Particle[] particles;
+int[] colorMap;
+
+int loadParticleImage() {
+  PImage img = loadImage("../common/gfx/star_320x256.png");
+  colorMap = new int[320*256];
+  
+  int pixelCount = 0;
+  for (int x=0; x<320; x++) {
+    for (int y=0; y<256; y++) {
+      color c = img.get(x, y);
+      int isSet = c == -1 ? 1 : 0;
+      colorMap[x+y*320] = isSet;
+      if (isSet > 0) pixelCount++;
+    }
+  }
+  
+  return pixelCount;
+}
 
 void setup() {
   size(640, 480);
@@ -46,12 +69,23 @@ void setup() {
   cols = floor(WIDTH / scale);
   rows = floor(HEIGHT / scale);
 
-  particles = new Particle[max_particles];
+  int pixelCount = loadParticleImage();
+  particles = new Particle[pixelCount];
+  int i = 0;
+  for (int x=0; x<320; x++) {
+    for (int y=0; y<256; y++) {
+      if (colorMap[x+y*320] > 0 && i < pixelCount) {
+        particles[i++] = new Particle(x*2, y*2);
+      }
+    }
+  }
+
+  /*particles = new Particle[max_particles];
   for (int i=0; i<max_particles; i++) {
     particles[i] = new Particle(
       (float)(Math.random() * 500 - 250) + WIDTH / 2, 
       (float)(Math.random() * 500 - 250) + HEIGHT / 2);
-  }
+  }*/
 }
 
 void draw() {
@@ -95,6 +129,6 @@ void draw() {
     if (fx >= 0 && fx < cols && fy >= 0 && fy < rows)
       p.update(flowfield[fx + fy * cols]);
 
-    circle(p.pos.x, p.pos.y, 6);
+    circle(p.pos.x, p.pos.y, 2);
   }
 }
